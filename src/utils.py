@@ -17,7 +17,7 @@ def build_noise_distribution(freqs: list[int], power: float = 0.75) -> np.ndarra
 
 
 def sigmoid(x: np.ndarray) -> np.ndarray:
-    "Sigmoid function."
+    "Sigmoid function"
     return np.where(
         x >= 0,
         1.0 / (1.0 + np.exp(-x)),
