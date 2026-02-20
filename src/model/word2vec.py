@@ -1,6 +1,8 @@
 
 import numpy as np
-from utils import sigmoid
+from utils import sigmoid, learning_rate_decay
+import time
+from tqdm import tqdm
 
 eps = 1e-10
 
@@ -10,13 +12,13 @@ class MyWord2Vec:
                  vocab_size: int, # (V) size of the vocabulary 
                  embed_dim: int  = 100, # (D) dimensionality of embeddings 
                  k: int = 5, # (K) number of negative samples for contrastive learning
-                 lr: float       = 0.025, # learning rate
+                 start_lr: float       = 0.025, # starting learning rate
         ): 
 
         self.vocab_size = vocab_size
         self.embed_dim = embed_dim
         self.k = k
-        self.lr = lr
+        self.start_lr = start_lr
 
         # W_in -> word embeddings  (V, D)
         self.W_in  = (np.random.rand(vocab_size, embed_dim) - 0.5) / embed_dim # uniform init 
@@ -28,8 +30,9 @@ class MyWord2Vec:
     def step(self,
             centre_idx: int, # index of the centre word
             pos_idx: int, # index of the positive context word 
-            neg_idxs: np.ndarray # indices of the negative samples 
-            ) -> float:
+            neg_idxs: np.ndarray, # indices of the negative samples 
+            lr: float # learning rate for this step
+        ) -> float:
         
         """
         Perform a single training step for one (centre, context) pair and K negative samples.
@@ -130,9 +133,91 @@ class MyWord2Vec:
 
         # OPTIMIZER:
         # Stochastic gradient descent update
-        lr = self.lr
         self.W_in[centre_idx]  -= lr * grad_vc
         self.W_out[pos_idx]    -= lr * grad_vo
         np.add.at(self.W_out, neg_idxs, -lr * grad_Vn) # fix for possible duplicate indices in neg_idxs
 
         return float(loss)
+    
+    
+    def train(self,
+              train_tokens: list[int], # list of token indices for the training corpus
+              noise_dist: np.ndarray, # (V,) array with the noise distribution for negative sampling
+              max_window: int   = 5, # max window size for context words
+              epochs: int   = 5, # number of epochs to train for
+              lr_min: float = 1e-4, # minimum learning rate for linear decay
+              report_every: int  = 100_000
+            ) -> None:
+        """
+        Training loop
+
+        - For each centre word in the training corpus, we sample a random window size W, and we consider the W words to the left and W words to the right as positive context words.
+        - For each (centre, context) pair we then sample K negative examples from the noise distribution
+        - We then perform a training step with the centre word, one positive context word and K negative samples, and we update the embeddings in-place with stochastic gradient descent.
+        
+        """
+
+        num_tokens = len(train_tokens)
+        vocab_size = self.vocab_size
+
+
+        # for the learning rate decay we need an estimate of the total number of training steps
+        # as w is drawn uniformly from 1 to max_window, the average window size is (max_window + 1) / 2
+        # for each centre word we have on average max_window context words
+        approx_total_steps = epochs * num_tokens * (max_window + 1)
+
+     
+        lr0 = self.start_lr
+        t0 = time.time()
+
+        global_step = 0
+        total_loss = 0.0
+
+        for epoch in tqdm(range(epochs), desc="Epochs"):
+            epoch_loss = 0.0
+            epoch_steps = 0
+
+            # for each centre word in the training corpus
+            for i, centre_idx in enumerate(train_tokens):
+
+                # draw the window size for this training example
+                W = np.random.randint(1, max_window + 1)
+                start = max(0, i - W)
+                end   = min(num_tokens, i + W + 1)
+
+                pos_context_idxs = train_tokens[start:i] + train_tokens[i+1:end]
+
+                for pos_idx in pos_context_idxs:
+                    # sample negatives examples 
+                    neg = np.random.choice(vocab_size, size=self.k, p=noise_dist)
+
+                    # we should re-draw negative samples until we have no overlap with the positive context word and the centre word
+                    mask = (neg == pos_idx) | (neg == centre_idx)
+                    while np.any(mask):
+                        neg[mask] = np.random.choice(vocab_size, size=mask.sum(), p=noise_dist)
+                        mask = (neg == pos_idx) | (neg == centre_idx)
+
+
+                    # learing rate decay
+                    lr = learning_rate_decay(lr0, lr_min, global_step, approx_total_steps)
+
+                    # forward and backward pass
+                    loss = self.step(centre_idx, pos_idx, neg, lr=lr)  
+
+
+                    epoch_loss += loss
+                    global_step += 1
+                    epoch_steps += 1
+
+                    if global_step % report_every == 0:
+                        elapsed = time.time() - t0
+                        print(f"Step {global_step}, Avg Loss: {epoch_loss / max(1, epoch_steps):.4f}, Elapsed: {elapsed:.2f}s")
+
+                    
+
+            print(f"Epoch {epoch+1}/{epochs} done! avg loss {epoch_loss / max(1, epoch_steps):.4f}")
+
+            total_loss += epoch_loss
+
+
+        print(f"Training completed in {time.time() - t0:.2f}s, Total Loss: {total_loss:.4f}")
