@@ -1,4 +1,4 @@
-import random as rng
+
 import numpy as np
 from utils import sigmoid
 
@@ -19,7 +19,7 @@ class MyWord2Vec:
         self.lr = lr
 
         # W_in -> word embeddings  (V, D)
-        self.W_in  = (rng.random((vocab_size, embed_dim)) - 0.5) / embed_dim # uniform init 
+        self.W_in  = (np.random.rand(vocab_size, embed_dim) - 0.5) / embed_dim # uniform init 
 
         # W_out -> context embeddings (V, D)
         self.W_out = np.zeros((vocab_size, embed_dim), dtype=np.float64) # zero init 
@@ -28,8 +28,8 @@ class MyWord2Vec:
     def step(self,
             centre_idx: int, # index of the centre word
             pos_idx: int, # index of the positive context word 
-            neg_idxs: np.ndarray, # indices of the negative samples 
-            lr: float) -> float:
+            neg_idxs: np.ndarray # indices of the negative samples 
+            ) -> float:
         
         """
         Perform a single training step for one (centre, context) pair and K negative samples.
@@ -74,7 +74,7 @@ class MyWord2Vec:
         # L_neg = - sum_k { log(1 - σ(s_k)) }  (since y=0)
         # putting it together:
         # L = L_pos + L_neg = -log σ(s_o) - sum_k { log(1 - σ(s_k)) }       
-        loss = -np.log(sig_o + eps) - np.sum(np.log(1.0 - sig_k + eps))  # we use log(1 - σ(s_k)) = log σ(-s_k) for numerical stability
+        loss = -np.log(sig_o + eps) - np.sum(np.log(1.0 - sig_k + eps)) 
 
         # BACKWARD
         # we have to perform backpropagation to compute the gradients for the input and output embeddings
@@ -130,8 +130,9 @@ class MyWord2Vec:
 
         # OPTIMIZER:
         # Stochastic gradient descent update
+        lr = self.lr
         self.W_in[centre_idx]  -= lr * grad_vc
         self.W_out[pos_idx]    -= lr * grad_vo
-        self.W_out[neg_idxs]   -= lr * grad_Vn
+        np.add.at(self.W_out, neg_idxs, -lr * grad_Vn) # fix for possible duplicate indices in neg_idxs
 
         return float(loss)
