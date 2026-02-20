@@ -1,12 +1,12 @@
-# word2vec-from-scratch
+# Word2Vec Training From Scratch
 
 ## Goal
 
-Minimal implementation of the Skip-gram Word2Vec model with negative sampling. The project trains word embeddings from scratch on the text8 corpus, handles data prep, training, and basic evaluation utilities with minimal dependencies.
+Minimal implementation of the Skip-gram Word2Vec model with negative sampling. The project trains word embeddings from scratch on the text8 corpus, handles data prep, training, and basic evaluation utilities with minimal dependencies (no PyTorch/TensorFlow, only NumPy).
 
 ## Dataset
 
-- Uses the text8 corpus (100 MB of Wikipedia text). It is downloaded automatically to data/text8 on first run and optionally truncated via the max_tokens flag for quicker experiments.
+- Uses the text8 corpus (Wpedia text). It is downloaded automatically to data/text8 on first run and optionally truncated via the max_tokens flag for quicker experiments.
 
 ## Project layout
 
@@ -47,13 +47,9 @@ word2vec-from-scratch/
 
 ## Design choices
 
-- Skip-gram with negative sampling to keep training efficient on large vocabularies.
-- Unigram^{3/4} noise distribution to balance frequent/rare negatives.
-- Mikolov subsampling to down-weight extremely frequent tokens and speed convergence.
+- Skip-gram with negative sampling to keep training efficient on large vocabularies
+- Unigram^{3/4} noise distribution to balance frequent/rare negatives
+- Mikolov subsampling to down-weight extremely frequent tokens
 - Linear learning-rate decay.
-- Separate input/output embedding matrices (W_in, W_out) for standard SGNS updates; only W_in used for similarity queries.
-- Uniform init for W_in and zero init for W_out.
-
-## Reusing saved embeddings
-
-- Load via MyWord2Vec.load(file) to restore weights and vocabulary, then call get_most_similar or analogy for probing.
+- Separate input/output embedding matrices (W_in, W_out) for standard SGNS updates; but only W_in used for similarity queries
+- Uniform init for W_in and zero init for W_out
