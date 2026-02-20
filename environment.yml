@@ -1,0 +1,10 @@
+name: word2vec-from-scratch
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy>=1.24
+  - tqdm
+  - pip
+  - typer
