@@ -21,12 +21,6 @@ def train(
     train(run_name, embed_dim, epochs, max_window, n_negatives)
 
 
-@app.command()
-def eval():
-    print("Evaluation not implemented yet")
-    
-    
-
 if __name__ == "__main__":
     app()
     

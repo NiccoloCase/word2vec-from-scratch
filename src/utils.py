@@ -3,8 +3,8 @@ import numpy as np
 
 def tokenise(text: str) -> list[str]:
     "Very simple but effective tokeniser: we just split on non-alphabetic characters and lowercase everything"
-    tookens = re.findall(r"[a-z]+", text.lower())
-    return tookens
+    tokens = re.findall(r"[a-z]+", text.lower())
+    return tokens
 
 def build_noise_distribution(freqs: list[int], power: float = 0.75) -> np.ndarray:
     """
