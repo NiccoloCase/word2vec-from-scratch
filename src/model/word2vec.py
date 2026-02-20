@@ -171,7 +171,9 @@ class MyWord2Vec:
         # for each centre word we have on average max_window context words
         approx_total_steps = epochs * num_tokens * (max_window + 1)
 
-     
+        print(f"Estimated training steps: {approx_total_steps:,} (epochs={epochs}, tokens={num_tokens:,}, max_window={max_window})")
+
+
         lr0 = self.start_lr
         t0 = time.time()
 

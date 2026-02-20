@@ -1,10 +1,10 @@
 from dataset.text8 import download_text8, load_text8
 from dataset.vocabulary import Vocabulary
 
-def get_training_data():
+def get_training_data(max_tokens: int | None = 1_000_000):
     # download and load the dataset
     path = download_text8()
-    tokens = load_text8(path, max_tokens=1_000_000)
+    tokens = load_text8(path, max_tokens=max_tokens)
 
     print("Downloaded and loaded text8 dataset, number of tokens:", len(tokens))
 
