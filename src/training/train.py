@@ -11,20 +11,18 @@ def train(run_name: str, embed_dim: int = 100, epochs: int = 1, max_window: int 
     tokens, voc = get_training_data()
 
     # for the sampling of negative examples we build a probability distribution over the vocabulary, based on word frequencies:
-    freqs = voc.freqs.values()
+    freqs = list(voc.freqs.values())  # dict_values -> list of counts
     noise_dist = build_noise_distribution(freqs)
 
     # init model
     model = MyWord2Vec(
         vocab_size = len(voc.word2idx),
         embed_dim = embed_dim,
-        noise_dist = noise_dist,
-        max_window = max_window,
-        n_negatives = n_negatives
+        k = n_negatives
     )
 
     # train the model
-    model = model.train(
+    model.train(
         train_tokens = tokens,
         noise_dist = noise_dist,
         max_window = max_window,

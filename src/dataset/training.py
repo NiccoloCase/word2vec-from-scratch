@@ -13,7 +13,6 @@ def get_training_data():
     voc = Vocabulary(tokens)
     print("Vocabulary size:", len(voc.word2idx))
 
-
     # encode the tokens with subsampling
     print("Encoding tokens with subsampling...")
     tokens = voc.encode_subsampled(tokens)
