@@ -331,6 +331,35 @@ class MyWord2Vec:
         top_ids = np.argsort(sims)[-top_k:][::-1]
 
         return [(vocab.idx2word[i], float(sims[i])) for i in top_ids]
+    
+
+    def analogy(self, a: str, b: str, c: str, top_k: int = 5):
+        """
+        Given an analogy query of the form "a is to b as c is to ?", find the top k most likely answers based on cosine similarity.
+        """
+
+        vocab = self.vocab
+        for w in (a, b, c):
+            if w not in vocab.word2idx:
+                raise KeyError(f"'{w}' not in vocabulary")
+
+        W = self.W_in
+
+        norms = np.linalg.norm(W, axis=1, keepdims=True)
+        norms = np.where(norms == 0, 1.0, norms)
+        W_norm = W / norms
+
+        target = W_norm[vocab.word2idx[b]] - W_norm[vocab.word2idx[a]] + W_norm[vocab.word2idx[c]]
+
+        sims = W_norm @ target
+
+        for w in (a, b, c):
+            sims[vocab.word2idx[w]] = -np.inf
+
+        top_ids = np.argpartition(sims, -top_k)[-top_k:]
+        top_ids = top_ids[np.argsort(sims[top_ids])[::-1]]
+        
+        return [(vocab.idx2word[i], float(sims[i])) for i in top_ids]
 
 
     
