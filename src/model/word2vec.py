@@ -1,30 +1,33 @@
+from pathlib import Path
 
 import numpy as np
 from utils import sigmoid, learning_rate_decay
 import time
 from tqdm import tqdm
+from dataset.vocabulary import Vocabulary
 
 eps = 1e-10
 
 class MyWord2Vec:
   
     def __init__(self,
-                 vocab_size: int, # (V) size of the vocabulary 
+                 vocab: Vocabulary, # vocabulary to own and serialize
                  embed_dim: int  = 100, # (D) dimensionality of embeddings 
                  k: int = 5, # (K) number of negative samples for contrastive learning
                  start_lr: float       = 0.025, # starting learning rate
         ): 
 
-        self.vocab_size = vocab_size
+        self.vocab = vocab
+        self.vocab_size = len(vocab)
         self.embed_dim = embed_dim
         self.k = k
         self.start_lr = start_lr
 
         # W_in -> word embeddings  (V, D)
-        self.W_in  = (np.random.rand(vocab_size, embed_dim) - 0.5) / embed_dim # uniform init 
+        self.W_in  = (np.random.rand(self.vocab_size, embed_dim) - 0.5) / embed_dim # uniform init 
 
         # W_out -> context embeddings (V, D)
-        self.W_out = np.zeros((vocab_size, embed_dim), dtype=np.float64) # zero init 
+        self.W_out = np.zeros((self.vocab_size, embed_dim), dtype=np.float64) # zero init 
 
 
     def step(self,
@@ -146,8 +149,8 @@ class MyWord2Vec:
               max_window: int   = 5, # max window size for context words
               epochs: int   = 5, # number of epochs to train for
               lr_min: float = 1e-4, # minimum learning rate for linear decay
-              report_every: int  = 100_000
-            ) -> None:
+              report_every: int  = 500_000
+                        ) -> list[tuple[int, float]]:
         """
         Training loop
 
@@ -155,10 +158,12 @@ class MyWord2Vec:
         - For each (centre, context) pair we then sample K negative examples from the noise distribution
         - We then perform a training step with the centre word, one positive context word and K negative samples, and we update the embeddings in-place with stochastic gradient descent.
         
+        Returns a list of (global_step, avg_loss) tuples for each report_every steps.
         """
 
         num_tokens = len(train_tokens)
         vocab_size = self.vocab_size
+        loss_history: list[tuple[int, float]] = []  # (global_step, avg_loss)
 
 
         # for the learning rate decay we need an estimate of the total number of training steps
@@ -211,30 +216,120 @@ class MyWord2Vec:
 
                     if global_step % report_every == 0:
                         elapsed = time.time() - t0
-                        print(f"Step {global_step}, Avg Loss: {epoch_loss / max(1, epoch_steps):.4f}, Elapsed: {elapsed:.2f}s")
+                        avg_loss = epoch_loss / max(1, epoch_steps)
+                        loss_history.append((global_step, avg_loss))
+                        print(f"Step {global_step}, Avg Loss: {avg_loss:.4f}, Elapsed: {elapsed:.2f}s")
 
-                    
-
-            print(f"Epoch {epoch+1}/{epochs} done! avg loss {epoch_loss / max(1, epoch_steps):.4f}")
+            avg_loss = epoch_loss / max(1, epoch_steps)
+            loss_history.append((global_step, avg_loss))
+            print(f"Epoch {epoch+1}/{epochs} done! avg loss {avg_loss:.4f}")
 
             total_loss += epoch_loss
 
 
         print(f"Training completed in {time.time() - t0:.2f}s, Total Loss: {total_loss:.4f}")
+        return loss_history
 
 
-    def save_embeddings(self, voc, file_path: str):
+    def save_embeddings(self, file_path):
         """
-        Save the input and output embeddings to a .npz file, along with the corresponding words in the vocabulary.
+        Save model weights and the owned vocabulary to a .npz file.
         """
 
-        if not file_path.endswith(".npz"):
+        if self.vocab is None:
+            raise ValueError("Vocabulary missing; cannot save model.")
+
+        out_path = Path(file_path)
+        if out_path.suffix != ".npz":
             raise ValueError("file_path should end with .npz")
         
-        out_file = file_path
-        np.savez(out_file,
-                 W_in = self.W_in,
-                 W_out = self.W_out,
-                 words = list(voc.word2idx.keys())
+        out_file = out_path
+        np.savez(
+            out_file,
+            W_in=self.W_in,
+            W_out=self.W_out,
+            vocab_state=self.vocab.to_state(),
+            k=self.k,
+            start_lr=self.start_lr,
+            embed_dim=self.embed_dim,
         )
+
+    @classmethod
+    def load(cls, file_path: str) -> "MyWord2Vec":
+        """
+        Load a model and its vocabulary from disk.
+        """
+        in_path = Path(file_path)
+        if not in_path.exists():
+            raise FileNotFoundError(f"{file_path} not found")
+        if in_path.suffix != ".npz":
+            raise ValueError("file_path should end with .npz")
+
+        data = np.load(in_path, allow_pickle=True)
+        W_in = data["W_in"]
+        W_out = data["W_out"]
+
+        if "vocab_state" in data.files:
+            vocab_state = data["vocab_state"].item()
+            vocab = Vocabulary.from_state(vocab_state)
+        elif "words" in data.files:
+            words = data["words"].tolist()
+            fallback_state = {
+                "words": words,
+                "freqs": [1 for _ in words],
+                "counts": [1 for _ in words],
+            }
+            vocab = Vocabulary.from_state(fallback_state)
+        else:
+            raise KeyError("No vocabulary data found in saved file.")
+
+        k = int(data["k"]) if "k" in data.files else 5
+        start_lr = float(data["start_lr"]) if "start_lr" in data.files else 0.025
+        embed_dim = W_in.shape[1]
+
+        model = cls(vocab=vocab, embed_dim=embed_dim, k=k, start_lr=start_lr)
+        model.W_in = W_in
+        model.W_out = W_out
+        return model
+
+    @classmethod
+    def load_embeddings(cls, file_path: str) -> "MyWord2Vec":
+        """Alias for load to ease migration from the old API."""
+        return cls.load(file_path)
+
+
+    def get_most_similar(self,
+                     word: str,
+                     vocab: Vocabulary | None = None, # word to index mapping
+                     top_k: int = 10) -> list[tuple[str, float]]:
+        """
+        Find the top k most similar words to the given word, based on cosine similarity of the input embeddings.
+        Returns a list of (word, similarity) 
+        """
+        vocab = vocab or self.vocab
+        if vocab is None: raise ValueError("Vocabulary missing; pass one explicitly or load a saved model.")
+
+        if word not in vocab.word2idx: raise KeyError(f"'{word}' not in vocabulary")
+
+        # L2-normalise the matrix 
+        # in this way the cosine similarity can be computed as a dot product between the normalised embeddings
+        norms = np.linalg.norm(self.W_in, axis=1, keepdims=True)
+        norms = np.where(norms == 0, 1.0, norms)
+        W_norm = self.W_in / norms
+
+        # embedding of the query word
+        query = W_norm[vocab.word2idx[word]] 
+
+        # calc the similarity between the query embedding and all the other embeddings as a dot product
+        sims  = W_norm @ query # (V, D) @ (D) -> (V)
+        sims[vocab.word2idx[word]] = -1.0   # exclude the query word itself from the results       
+
+
+        # get the top k indices with the highest similarity
+        top_ids = np.argsort(sims)[-top_k:][::-1]
+
+        return [(vocab.idx2word[i], float(sims[i])) for i in top_ids]
+
+
+    
 

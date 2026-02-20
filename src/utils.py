@@ -6,7 +6,6 @@ def tokenise(text: str) -> list[str]:
     tookens = re.findall(r"[a-z]+", text.lower())
     return tookens
 
-
 def build_noise_distribution(freqs: list[int], power: float = 0.75) -> np.ndarray:
     """
     Unigram distribution raised to the 3/4 power.
@@ -14,7 +13,6 @@ def build_noise_distribution(freqs: list[int], power: float = 0.75) -> np.ndarra
     """
     arr = np.array(freqs, dtype=np.float64) ** power
     return arr / arr.sum()
-
 
 def sigmoid(x: np.ndarray) -> np.ndarray:
     "Sigmoid function"
@@ -42,3 +40,4 @@ def learning_rate_decay(lr0: float, lr_min: float, current_step: int, total_step
 
     """
     return max(lr_min, lr0 * (1.0 - current_step / total_steps))
+

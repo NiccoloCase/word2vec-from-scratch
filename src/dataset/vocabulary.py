@@ -11,6 +11,7 @@ class Vocabulary:
         subsample_t: float = 1e-3 # the threshold for subsampling (Mikolov)
     ) -> None:
         self.min_count = min_count
+        self.subsample_t = subsample_t
         self.freqs: Dict[str, int] = {}
         self.word2idx: Dict[str, int] = {}
         self.idx2word: Dict[int, str] = {}
@@ -91,6 +92,35 @@ class Vocabulary:
             if rnd.random() < float(self.keep_prob[idx]): indices.append(idx)
 
         return indices
+
+    def to_state(self) -> dict:
+        """Return a serialisable snapshot of the vocabulary"""
+        words = [self.idx2word[i] for i in range(len(self.idx2word))]
+        freqs = [self.freqs[w] for w in words]
+        return {
+            "words": words,
+            "freqs": freqs,
+            "counts": list(self.counts),
+            "min_count": self.min_count,
+            "subsample_t": self.subsample_t,
+        }
+
+    @classmethod
+    def from_state(cls, state: dict) -> "Vocabulary":
+        """Rebuild a vocabulary from a snapshot created by to_state."""
+        words = state.get("words", [])
+        freqs = state.get("freqs", [])
+        counts = state.get("counts", freqs)
+        min_count = state.get("min_count", 5)
+        subsample_t = state.get("subsample_t", 1e-3)
+
+        voc = cls(tokens=[], min_count=min_count, subsample_t=subsample_t)
+        voc.word2idx = {w: i for i, w in enumerate(words)}
+        voc.idx2word = {i: w for i, w in enumerate(words)}
+        voc.freqs = {w: int(f) for w, f in zip(words, freqs)}
+        voc.counts = [int(c) for c in counts]
+        voc.set_subsampling(subsample_t)
+        return voc
 
 
     def __len__(self) -> int:

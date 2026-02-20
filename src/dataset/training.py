@@ -4,7 +4,7 @@ from dataset.vocabulary import Vocabulary
 def get_training_data():
     # download and load the dataset
     path = download_text8()
-    tokens = load_text8(path)
+    tokens = load_text8(path, max_tokens=1_000_000)
 
     print("Downloaded and loaded text8 dataset, number of tokens:", len(tokens))
 
