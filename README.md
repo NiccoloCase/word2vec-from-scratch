@@ -16,6 +16,7 @@ word2vec-from-scratch/
 ├─ environment.yml          # Conda environment spec
 ├─ data/                    # text8 download cache
 ├─ output/                  # Saved runs (embeddings, loss curves)
+├─ jobs/                    # Slurm job scripts for training
 ├─ src/
 │  ├─ config.py             # Paths and directory bootstrap
 │  ├─ utils.py              # Tokeniser, noise dist, sigmoid, LR decay
