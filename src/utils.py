@@ -14,3 +14,12 @@ def build_noise_distribution(freqs: list[int], power: float = 0.75) -> np.ndarra
     """
     arr = np.array(freqs, dtype=np.float64) ** power
     return arr / arr.sum()
+
+
+def sigmoid(x: np.ndarray) -> np.ndarray:
+    "Sigmoid function."
+    return np.where(
+        x >= 0,
+        1.0 / (1.0 + np.exp(-x)),
+        np.exp(x) / (1.0 + np.exp(x))
+    )
