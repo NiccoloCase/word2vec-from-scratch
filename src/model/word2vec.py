@@ -221,3 +221,20 @@ class MyWord2Vec:
 
 
         print(f"Training completed in {time.time() - t0:.2f}s, Total Loss: {total_loss:.4f}")
+
+
+    def save_embeddings(self, voc, file_path: str):
+        """
+        Save the input and output embeddings to a .npz file, along with the corresponding words in the vocabulary.
+        """
+
+        if not file_path.endswith(".npz"):
+            raise ValueError("file_path should end with .npz")
+        
+        out_file = file_path
+        np.savez(out_file,
+                 W_in = self.W_in,
+                 W_out = self.W_out,
+                 words = list(voc.word2idx.keys())
+        )
+
