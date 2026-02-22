@@ -12,9 +12,9 @@ class MyWord2Vec:
   
     def __init__(self,
                  vocab: Vocabulary, # vocabulary to own and serialize
-                 embed_dim: int  = 100, # (D) dimensionality of embeddings 
+                 embed_dim: int = 100, # (D) dimensionality of embeddings 
                  k: int = 5, # (K) number of negative samples for contrastive learning
-                 start_lr: float       = 0.025, # starting learning rate
+                 start_lr: float = 0.025, # starting learning rate
         ): 
 
         self.vocab = vocab
@@ -358,7 +358,7 @@ class MyWord2Vec:
 
         top_ids = np.argpartition(sims, -top_k)[-top_k:]
         top_ids = top_ids[np.argsort(sims[top_ids])[::-1]]
-        
+
         return [(vocab.idx2word[i], float(sims[i])) for i in top_ids]
 
 
