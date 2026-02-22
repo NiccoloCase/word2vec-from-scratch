@@ -6,7 +6,7 @@ Minimal implementation of the Skip-gram Word2Vec model with negative sampling. T
 
 ## Dataset
 
-- Uses the text8 corpus (Wpedia text). It is downloaded automatically to data/text8 on first run and optionally truncated via the max_tokens flag for quicker experiments.
+- Uses the text8 corpus (Wpedia text). It is downloaded automatically to data/text8 on first run and optionally truncated via the max_tokens flag for quicker experiments (I used only the first 5M tokens for testing).
 
 ## Project layout
 
@@ -33,7 +33,7 @@ word2vec-from-scratch/
 
 ## How to train
 
-1. Install dependencies (recommended via conda using environment.yml) and ensure Python 3.10+.
+1. Install dependencies using environment.yml
 2. From the repo root, launch the training with:
 
    ```bash
