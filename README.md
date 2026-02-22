@@ -1,12 +1,14 @@
 # Word2Vec Training From Scratch
 
+Author: Niccolò Caselli (University of Amsterdam, 2026)
+
 ## Goal
 
 Minimal implementation of the Skip-gram Word2Vec model with negative sampling. The project trains word embeddings from scratch on the text8 corpus, handles data prep, training, and basic evaluation utilities with minimal dependencies (no PyTorch/TensorFlow, only NumPy).
 
 ## Dataset
 
-- Uses the text8 corpus (Wpedia text). It is downloaded automatically to data/text8 on first run and optionally truncated via the max_tokens flag for quicker experiments (I used only the first 5M tokens for testing).
+- Uses the text8 corpus (Wikipedia text). It is downloaded automatically to data/text8 on first run and optionally truncated via the max_tokens flag for quicker experiments (I used only the first 5M tokens for testing).
 
 ## Project layout
 
