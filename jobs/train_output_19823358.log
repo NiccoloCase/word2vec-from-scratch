@@ -1,0 +1,52 @@
+Training the model...
+Dataset already present at /gpfs/home4/scur1882/experimentation/word2vec-from-scratch/data/text8
+Downloaded and loaded text8 dataset, number of tokens: 5000000
+Crating vocabulary...
+Vocabulary size: 36280
+Encoding tokens with subsampling...
+Number of tokens after encoding and subsampling: 3372643
+Estimated training steps: 20,235,858 (epochs=1, tokens=3,372,643, max_window=5)
+Step 500000, Avg Loss: 3.5749, Elapsed: 235.20s
+Step 1000000, Avg Loss: 3.2039, Elapsed: 471.66s
+Step 1500000, Avg Loss: 3.0006, Elapsed: 707.25s
+Step 2000000, Avg Loss: 2.8797, Elapsed: 944.57s
+Step 2500000, Avg Loss: 2.7995, Elapsed: 1182.75s
+Step 3000000, Avg Loss: 2.7427, Elapsed: 1424.13s
+Step 3500000, Avg Loss: 2.6993, Elapsed: 1660.52s
+Step 4000000, Avg Loss: 2.6591, Elapsed: 1896.03s
+Step 4500000, Avg Loss: 2.6223, Elapsed: 2132.97s
+Step 5000000, Avg Loss: 2.5990, Elapsed: 2368.41s
+Step 5500000, Avg Loss: 2.5776, Elapsed: 2606.31s
+Step 6000000, Avg Loss: 2.5600, Elapsed: 2847.51s
+Step 6500000, Avg Loss: 2.5460, Elapsed: 3088.52s
+Step 7000000, Avg Loss: 2.5348, Elapsed: 3325.29s
+Step 7500000, Avg Loss: 2.5252, Elapsed: 3562.48s
+Step 8000000, Avg Loss: 2.5174, Elapsed: 3798.81s
+Step 8500000, Avg Loss: 2.5100, Elapsed: 4036.05s
+Step 9000000, Avg Loss: 2.5036, Elapsed: 4271.43s
+Step 9500000, Avg Loss: 2.4972, Elapsed: 4510.11s
+Step 10000000, Avg Loss: 2.4857, Elapsed: 4747.31s
+Step 10500000, Avg Loss: 2.4824, Elapsed: 4988.83s
+Step 11000000, Avg Loss: 2.4753, Elapsed: 5229.88s
+Step 11500000, Avg Loss: 2.4714, Elapsed: 5468.66s
+Step 12000000, Avg Loss: 2.4683, Elapsed: 5704.04s
+Step 12500000, Avg Loss: 2.4655, Elapsed: 5939.64s
+Step 13000000, Avg Loss: 2.4610, Elapsed: 6175.02s
+Step 13500000, Avg Loss: 2.4594, Elapsed: 6412.97s
+Step 14000000, Avg Loss: 2.4592, Elapsed: 6650.95s
+Step 14500000, Avg Loss: 2.4583, Elapsed: 6887.10s
+Step 15000000, Avg Loss: 2.4585, Elapsed: 7123.79s
+Step 15500000, Avg Loss: 2.4575, Elapsed: 7360.29s
+Step 16000000, Avg Loss: 2.4566, Elapsed: 7596.96s
+Step 16500000, Avg Loss: 2.4550, Elapsed: 7833.65s
+Step 17000000, Avg Loss: 2.4521, Elapsed: 8070.19s
+Step 17500000, Avg Loss: 2.4526, Elapsed: 8306.17s
+Step 18000000, Avg Loss: 2.4538, Elapsed: 8542.79s
+Step 18500000, Avg Loss: 2.4546, Elapsed: 8779.22s
+Step 19000000, Avg Loss: 2.4558, Elapsed: 9015.54s
+Step 19500000, Avg Loss: 2.4574, Elapsed: 9251.96s
+Step 20000000, Avg Loss: 2.4597, Elapsed: 9488.27s
+Epoch 1/1 done! avg loss 2.4619
+Training completed in 9598.69s, Total Loss: 49813510.5081
+Saved loss data to /gpfs/home4/scur1882/experimentation/word2vec-from-scratch/output/snellius-fast/loss_snellius-fast.npz
+Saved loss plot to /gpfs/home4/scur1882/experimentation/word2vec-from-scratch/output/snellius-fast/loss_snellius-fast.png

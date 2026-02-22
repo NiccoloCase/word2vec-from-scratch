@@ -18,4 +18,4 @@ conda activate word2vec-from-scratch
 
 cd "../"
 
-python -u run.py --run-name snellius-fast --epochs 1 --max-window 3 --n-negatives 3 --embed-dim 100 --max-tokens 3000000
+python -u run.py --run-name snellius-fast --epochs 1 --max-window 5 --n-negatives 5 --embed-dim 100 --max-tokens 5000000
